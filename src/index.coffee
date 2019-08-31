@@ -34,12 +34,21 @@ engine        = require './server_engine_handler'
   
   opt.htdocs = opt.htdocs.replace /\/$/, ''
   
+  allowed_dir_list = []
+  vendor_path = "./node_modules/webcom-engine-vendor"
+  seek_vendor_path = vendor_path.replace /^\./, ''
+  if opt.vendor
+    full_vendor_path = "#{vendor_path}/#{opt.vendor}"
+    allowed_dir_list.push full_vendor_path
+  
   server_start_time = (new Date()).toUTCString()
   
   cache = {}
   full_to_url_path = (full_path)->
     full_path = full_path.replace /^\.\//, '/'
     full_path = full_path.replace opt.htdocs, ''
+    if 0 == full_path.indexOf seek_vendor_path
+      full_path = full_path.replace seek_vendor_path, "/vendor"
     full_path
   read_c_item = (full_path, root_url_path, ignore_cache = false)->
     url_path = full_to_url_path full_path
@@ -84,6 +93,8 @@ engine        = require './server_engine_handler'
     url_path = url.pathname
     url_path = url_path.replace "/..", ''
     url_path = url_path.replace /\/$/, ''
+    url_path = url_path.replace /^\/vendor/, seek_vendor_path
+    
     send_c_item = (c_item)->
       if c_item.body instanceof Buffer
         res.setHeader "Content-Length", c_item.body.length
@@ -104,10 +115,15 @@ engine        = require './server_engine_handler'
       await fs.exists full_path, defer(exists)
       break if exists
       
-      full_path = "./"+url_path
-      await fs.exists full_path, defer(exists)
-      break if exists
-      
+      full_path = "./"+url_path.replace /^\//, ''
+      pass = false
+      for dir in allowed_dir_list
+        if 0 == full_path.indexOf dir
+          pass = true
+          break
+      if pass
+        await fs.exists full_path, defer(exists)
+        break if exists
       res.end 'not exists'
       return
     await fs.stat full_path, defer(err, stat) ; throw err if err
@@ -159,11 +175,8 @@ engine        = require './server_engine_handler'
             file_arg_list.push [real_path, root_path]
         return
       
-      vendor_path = "node_modules/webcom-engine-vendor"
       if opt.vendor
-        recursive_read "./#{vendor_path}/#{opt.vendor}"
-      if fs.existsSync full_path+"/#{vendor_path}"
-        recursive_read full_path+"/#{vendor_path}"
+        recursive_read full_vendor_path
       file_arg_list.push ["/bundle.coffee"]
       recursive_read full_path, url_path, /\.com\.coffee$/, true
       recursive_read full_path, url_path, /\.com\.coffee$/, false
