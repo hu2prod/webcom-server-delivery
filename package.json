@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/hu2prod/webcom-server-delivery#readme",
   "dependencies": {
-    "chokidar": "^3.0.2",
+    "chokidar": "^1.7.0",
     "com-lang": "github:hu2prod/com-lang",
     "compression": "^1.7.4",
     "cson": "^5.1.0",
