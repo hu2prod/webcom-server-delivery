@@ -18,6 +18,13 @@
   },
   "homepage": "https://github.com/hu2prod/webcom-server-delivery#readme",
   "dependencies": {
-    "html-tag-collection": "github:hu2prod/html-tag-collection"
+    "com-lang": "github:hu2prod/com-lang",
+    "cson": "^5.1.0",
+    "express": "^4.17.1",
+    "fy": "github:hu2prod/fy",
+    "html-tag-collection": "github:hu2prod/html-tag-collection",
+    "iced-coffee-script": "^108.0.13",
+    "mime": "^2.4.4",
+    "range-parser": "^1.2.1"
   }
 }
