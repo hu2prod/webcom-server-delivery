@@ -24,7 +24,20 @@ path_to_com_name = (com_name)->
     chunk_list[idx+1] = next.substr chunk.length+1
   com_name = chunk_list.filter((t)->t).join '/'
   
-  com_name = com_name.replace(/\//g, '_').replace(/_index/g, '').replace(/index_/g, '').replace(/^_/, '').replace(/_+/g, '_')
+  # category directories
+  com_name = '/'+com_name
+  com_name = com_name.replace(/\/_[^\/]*\//, '/')
+  
+  com_name = com_name.replace(/\//g, '_')
+  
+  # index files
+  com_name = com_name.replace(/_index/g, '')
+  com_name = com_name.replace(/index_/g, '')
+  
+  # replace _ prefix
+  com_name = com_name.replace(/^_/, '')
+  # replace multiple __ anywhere
+  com_name = com_name.replace(/_+/g, '_')
   
   com_name = com_name[0].toUpperCase()+com_name.substr(1).toLowerCase() # Capitalize + lower case other
   return com_name
