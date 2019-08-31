@@ -1,5 +1,5 @@
 {
-  "name": "webcom-server-delivery",
+  "name": "webcom",
   "version": "1.0.0",
   "description": "",
   "main": "lib/index.js",
@@ -8,15 +8,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hu2prod/webcom-server-delivery.git"
+    "url": "git+https://github.com/hu2prod/webcom.git"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/hu2prod/webcom-server-delivery/issues"
+    "url": "https://github.com/hu2prod/webcom/issues"
   },
-  "homepage": "https://github.com/hu2prod/webcom-server-delivery#readme",
+  "homepage": "https://github.com/hu2prod/webcom#readme",
   "dependencies": {
     "chokidar": "^1.7.0",
     "com-lang": "github:hu2prod/com-lang",

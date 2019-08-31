@@ -1,1 +1,2 @@
-# webcom-server-delivery
+# webcom
+core component
