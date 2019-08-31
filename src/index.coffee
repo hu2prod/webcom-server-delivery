@@ -350,6 +350,14 @@ engine        = require './server_engine_handler'
                 content: c_item.body
                 event
               }
+          when 'image'
+            module.start_ts = Date.now()
+            wss.write {
+              switch  : "hotreload_image"
+              start_ts: module.start_ts
+              path    : c_item.url_path
+              event
+            }
           when 'js'
             module.start_ts = Date.now()
             wss.write {
