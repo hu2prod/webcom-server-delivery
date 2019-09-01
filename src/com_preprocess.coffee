@@ -59,6 +59,8 @@ com_lang = require 'com-lang'
     on_mouse_move : 'onMouseMove'
     on_mouse_down : 'onMouseDown'
     on_mouse_out  : 'onMouseOut'
+    on_move_over  : 'onMouseOver'
+    on_hover      : 'onMouseOver'
   }
   window.CKR = 
     __node_buffer : []
