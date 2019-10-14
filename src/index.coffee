@@ -101,7 +101,7 @@ engine        = require './server_engine_handler'
       else
         res.setHeader "Content-Length", Buffer.byteLength c_item.body, 'UTF-8'
       header_content_type = c_item.header_content_type
-      header_content_type += "; charset=utf-8" unless /css/.test header_content_type
+      header_content_type += "; charset=utf-8" unless /\/wasm|css$/.test header_content_type
       res.setHeader "Content-Type", header_content_type
       if !opt.hotreload
         res.setHeader 'Last-Modified', server_start_time
@@ -214,27 +214,35 @@ engine        = require './server_engine_handler'
           """
       
       # TODO LATER opt.index_html
-      body = """
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <meta charset=\"utf-8\">
-            #{opt.head or ''}
-            <title>#{opt.title or 'Webcom delivery'}</title>
-            <style>
-              #{join_list style_list, '      '}
-            </style>
-          </head>
-          <body>
-            <div id=\"mount_point\"></div>
-            <script>
-              #{make_tab hot_reload_code, '      '}
-              var framework_style_hash = #{JSON.stringify style_hash};
-            </script>
-            #{join_list script_list, '    '}
-          </body>
-        </html>
-        """
+      if opt.body_fn?
+        extra_opt = clone opt
+        extra_opt.hot_reload_code = hot_reload_code
+        extra_opt.style_list  = style_list
+        extra_opt.style_hash  = style_hash
+        extra_opt.script_list = script_list
+        body = opt.body_fn extra_opt
+      else
+        body = """
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <meta charset=\"utf-8\">
+              #{opt.head or ''}
+              <title>#{opt.title or 'Webcom delivery'}</title>
+              <style>
+                #{join_list style_list, '      '}
+              </style>
+            </head>
+            <body>
+              <div id=\"mount_point\"></div>
+              <script>
+                #{make_tab hot_reload_code, '      '}
+                var framework_style_hash = #{JSON.stringify style_hash};
+              </script>
+              #{join_list script_list, '    '}
+            </body>
+          </html>
+          """
       # var framework_template_hash = #{JSON.stringify template_hash};
       return send_c_item {
         header_content_type : engine.mime 'html'
@@ -313,6 +321,8 @@ engine        = require './server_engine_handler'
       if path.sep != '/'
         full_path = full_path.split(path.sep).join('/')
       return if /^\.git/.test full_path
+      return if opt.watcher_ignore? event, full_path
+      
       setTimeout ()->
         puts "[INFO] #{event.ljust 8} #{full_path}"
         if -1 == full_path.indexOf opt.htdocs
@@ -394,8 +404,9 @@ engine        = require './server_engine_handler'
       clearTimeout timeout if timeout?
       timeout = setTimeout on_ready, 5000 # Прим. это всего лишь recovery. chokidar в первую очередь должен попытаться решить это всё сам
       return
-    watcher.on 'add', (path)->
-      # p "ADD", path
+    watcher.on 'add', (full_path)->
+      return if opt.watcher_ignore? 'add', full_path
+      # p "ADD", full_path
       upd_ready_timer()
     puts "[INFO] watcher start..."
     watcher.on 'ready', on_ready
@@ -404,4 +415,7 @@ engine        = require './server_engine_handler'
       server.close()
       wss?.close() # NOTE didn't work
       watcher?.close()
+    watcher
+    cache
+    full_to_url_path
   }
