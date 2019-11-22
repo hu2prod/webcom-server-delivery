@@ -418,4 +418,5 @@ engine        = require './server_engine_handler'
     watcher
     cache
     full_to_url_path
+    wss
   }
