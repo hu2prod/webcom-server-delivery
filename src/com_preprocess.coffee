@@ -70,6 +70,8 @@ com_lang = require 'com-lang'
       return t
     list : (t)->
       CKR.__node_buffer.uappend t
+    item : (fn, arg...)->
+      CKR.__node_buffer.upush fn arg...
     react_key_map : (name, t)->
       ret = {
         name
