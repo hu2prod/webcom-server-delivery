@@ -160,7 +160,10 @@ engine        = require './server_engine_handler'
         for dir in conf.require_list
           recursive_read "#{opt.htdocs}/#{dir}", "/#{dir}", file_filter, file_filter_condition
         
-        for file in fs.readdirSync path
+        file_list = []
+        sorted_file_list = fs.readdirSync path
+        sorted_file_list.sort()
+        for file in sorted_file_list
           continue if file == '.config'
           real_path = "#{path}/#{file}"
           continue if conf.ignore_list.has real_path
@@ -169,10 +172,15 @@ engine        = require './server_engine_handler'
           if stat.isDirectory()
             recursive_read real_path, root_path, file_filter, file_filter_condition
           else
-            continue if file_filter and file_filter_condition != file_filter.test file
-            continue if file_hash[real_path]
-            file_hash[real_path] = true
-            file_arg_list.push [real_path, root_path]
+            # delay
+            file_list.push {file, real_path, root_path}
+        
+        for tmp in file_list
+          {file, real_path, root_path} = tmp
+          continue if file_filter and file_filter_condition != file_filter.test file
+          continue if file_hash[real_path]
+          file_hash[real_path] = true
+          file_arg_list.push [real_path, root_path]
         return
       
       if opt.vendor
