@@ -94,6 +94,7 @@ engine        = require './server_engine_handler'
     url_path = url_path.replace "/..", ''
     url_path = url_path.replace /\/$/, ''
     url_path = url_path.replace /^\/vendor/, seek_vendor_path
+    url_path = decodeURIComponent url_path
     
     send_c_item = (c_item)->
       if c_item.body instanceof Buffer
