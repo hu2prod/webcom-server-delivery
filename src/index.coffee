@@ -58,7 +58,7 @@ engine        = require './server_engine_handler'
       if c_item = cache[url_path]
         root_url_path ?= c_item.root_url_path
     
-    [skip, engine_name] = /\.([^\/.]*?)$/.exec url_path
+    [skip, engine_name] = /\.([^\/]*?)$/.exec url_path
     code = fs.readFileSync full_path
     engine_opt = opt.engine or {}
     engine_opt.url_path = url_path.replace root_url_path, ""

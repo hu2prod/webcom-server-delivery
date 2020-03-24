@@ -6,8 +6,8 @@ com_preprocess = require './com_preprocess'
 @style    = /^(css|styl|stylus|less|sass)$/
 @template = /^(html?|jade)$/
 @script   = /^(js|coffee|iced)$/
-@image    = /^(png|jpe?g|gif|bmp|ico)$/
-@font     = /^(ttf|otf|woff|woff2)$/
+@image    = /(png|jpe?g|gif|bmp|ico)$/
+@font     = /(ttf|otf|woff|woff2)$/
 
 image_regex = /^png|jpe?g|gif|bmp|ico$/
 coffee_opt =
@@ -108,13 +108,14 @@ path_to_com_name = (com_name)->
       # ###################################################################################################
       #    images
       # ###################################################################################################
-    if module.image.test engine_name
-      engine = (code, opt)->code
-    if module.font.test engine_name
-      engine = (code, opt)->code
-    if !engine
-      engine = (code, opt)->code
-      perr "unknown engine #{engine_name}"
+      else
+        if module.image.test engine_name
+          engine = (code, opt)->code
+        if module.font.test engine_name
+          engine = (code, opt)->code
+        if !engine
+          engine = (code, opt)->code
+          perr "unknown engine #{engine_name}"
     module._engine_cache[engine_name] = engine
   engine code, opt
 
