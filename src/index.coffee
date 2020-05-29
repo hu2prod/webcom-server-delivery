@@ -36,7 +36,7 @@ engine        = require "./server_engine_handler"
   
   allowed_dir_list = []
   vendor_path = "./node_modules/webcom-engine-vendor"
-  seek_vendor_path = vendor_path.replace root, ""
+  seek_vendor_path = vendor_path.replace ".", ""
   if opt.vendor
     full_vendor_path = "#{vendor_path}/#{opt.vendor}"
     allowed_dir_list.push full_vendor_path
@@ -128,6 +128,7 @@ engine        = require "./server_engine_handler"
       res.end "not exists"
       return
     await fs.stat full_path, defer(err, stat) ; throw err if err
+    return if stat.isSymbolicLink()
     if stat.isDirectory()
       if url.pathname[url.pathname.length - 1] != "/"
         # Redirrect ибо не будут работать относительные пути
@@ -140,7 +141,7 @@ engine        = require "./server_engine_handler"
       style_hash = {}
       # template_hash = {}
       script_list = []
-    
+      
       file_hash = {}
       file_arg_list = []
       recursive_read = (path, root_path, file_filter, file_filter_condition)->
@@ -169,6 +170,8 @@ engine        = require "./server_engine_handler"
           real_path = "#{path}/#{file}"
           continue if conf.ignore_list.has real_path
           stat = fs.lstatSync real_path
+          
+          continue if stat.isSymbolicLink()
           
           if stat.isDirectory()
             recursive_read real_path, root_path, file_filter, file_filter_condition
