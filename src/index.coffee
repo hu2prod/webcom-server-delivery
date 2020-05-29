@@ -1,17 +1,17 @@
 module = @
-require 'fy'
-require 'fy/codegen'
-# http          = require 'http'
-express       = require 'express'
-os            = require 'os'
-path          = require 'path'
-mod_url       = require 'url'
-fs            = require 'fs'
-CSON          = require 'cson'
-compression   = require 'compression'
-mime          = require 'mime'
-range_parser  = require 'range-parser'
-engine        = require './server_engine_handler'
+require "fy"
+require "fy/codegen"
+# http          = require "http"
+express       = require "express"
+os            = require "os"
+path          = require "path"
+mod_url       = require "url"
+fs            = require "fs"
+CSON          = require "cson"
+compression   = require "compression"
+mime          = require "mime"
+range_parser  = require "range-parser"
+engine        = require "./server_engine_handler"
 
 @start_ts     = Date.now()
 
@@ -22,7 +22,7 @@ engine        = require './server_engine_handler'
   if !opt.bundle
     throw new Error "missing opt.bundle"
   opt.port ?= 8080
-  opt.js_delivery ?= 'separate'
+  opt.js_delivery ?= "separate"
   # safe mode
   opt.css_strict_order ?= true
   opt.hotreload   ?= opt.watch
@@ -32,11 +32,11 @@ engine        = require './server_engine_handler'
   opt.seekable    ?= true
   opt.seekable_threshold ?= 1e6
   
-  opt.htdocs = opt.htdocs.replace /\/$/, ''
+  opt.htdocs = opt.htdocs.replace /\/$/, ""
   
   allowed_dir_list = []
   vendor_path = "./node_modules/webcom-engine-vendor"
-  seek_vendor_path = vendor_path.replace /^\./, ''
+  seek_vendor_path = vendor_path.replace root, ""
   if opt.vendor
     full_vendor_path = "#{vendor_path}/#{opt.vendor}"
     allowed_dir_list.push full_vendor_path
@@ -45,8 +45,8 @@ engine        = require './server_engine_handler'
   
   cache = {}
   full_to_url_path = (full_path)->
-    full_path = full_path.replace /^\.\//, '/'
-    full_path = full_path.replace opt.htdocs, ''
+    full_path = full_path.replace /^\.\//, "/"
+    full_path = full_path.replace opt.htdocs, ""
     if 0 == full_path.indexOf seek_vendor_path
       full_path = full_path.replace seek_vendor_path, "/vendor"
     full_path
@@ -70,15 +70,15 @@ engine        = require './server_engine_handler'
       root_url_path
     }
     # fix jade
-    if engine_name != 'html' and c_item.engine == 'html'
+    if engine_name != "html" and c_item.engine == "html"
       c_item.url_path = c_item.url_path.replace /\.(.*?)$/, ".html"
     
     # LATER compact template HERE
     cache[url_path] = c_item
   
   cache["/bundle.coffee"] = {
-    engine  : 'js'
-    header_content_type : engine.mime 'js'
+    engine  : "js"
+    header_content_type : engine.mime "js"
     body    : opt.bundle.code_gen()
     url_path: "/bundle.coffee"
   }
@@ -91,8 +91,8 @@ engine        = require './server_engine_handler'
       comp req, res, ->
     url = mod_url.parse req.url
     url_path = url.pathname
-    url_path = url_path.replace "/..", ''
-    url_path = url_path.replace /\/$/, ''
+    url_path = url_path.replace "/..", ""
+    url_path = url_path.replace /\/$/, ""
     url_path = url_path.replace /^\/vendor/, seek_vendor_path
     url_path = decodeURIComponent url_path
     
@@ -100,12 +100,12 @@ engine        = require './server_engine_handler'
       if c_item.body instanceof Buffer
         res.setHeader "Content-Length", c_item.body.length
       else
-        res.setHeader "Content-Length", Buffer.byteLength c_item.body, 'UTF-8'
+        res.setHeader "Content-Length", Buffer.byteLength c_item.body, "UTF-8"
       header_content_type = c_item.header_content_type
       header_content_type += "; charset=utf-8" unless /\/wasm|css$/.test header_content_type
       res.setHeader "Content-Type", header_content_type
       if !opt.hotreload
-        res.setHeader 'Last-Modified', server_start_time
+        res.setHeader "Last-Modified", server_start_time
       res.end c_item.body
       return
     
@@ -116,7 +116,7 @@ engine        = require './server_engine_handler'
       await fs.exists full_path, defer(exists)
       break if exists
       
-      full_path = "./"+url_path.replace /^\//, ''
+      full_path = "./"+url_path.replace /^\//, ""
       pass = false
       for dir in allowed_dir_list
         if 0 == full_path.indexOf dir
@@ -125,13 +125,13 @@ engine        = require './server_engine_handler'
       if pass
         await fs.exists full_path, defer(exists)
         break if exists
-      res.end 'not exists'
+      res.end "not exists"
       return
     await fs.stat full_path, defer(err, stat) ; throw err if err
     if stat.isDirectory()
       if url.pathname[url.pathname.length - 1] != "/"
         # Redirrect ибо не будут работать относительные пути
-        res.setHeader 'Location', url_path+"/"
+        res.setHeader "Location", url_path+"/"
         res.writeHead 302
         res.end()
         # return res.redirect(url_path+"/") # так можно в express
@@ -165,7 +165,7 @@ engine        = require './server_engine_handler'
         sorted_file_list = fs.readdirSync path
         sorted_file_list.sort()
         for file in sorted_file_list
-          continue if file == '.config'
+          continue if file == ".config"
           real_path = "#{path}/#{file}"
           continue if conf.ignore_list.has real_path
           stat = fs.lstatSync real_path
@@ -194,22 +194,22 @@ engine        = require './server_engine_handler'
       for file_arg in file_arg_list
         if opt.seekable
           path = file_arg[0]
-          if path != '/bundle.coffee'
+          if path != "/bundle.coffee"
             stat = fs.statSync path
             continue if stat.size > opt.seekable_threshold
         
         c_item = read_c_item file_arg...
         switch c_item.engine
-          # when 'html'
+          # when "html"
             # template_hash[c_item.url_path] = c_item.body
-          when 'js'
+          when "js"
             switch opt.js_delivery
-              when 'separate'
+              when "separate"
                 url_file_list.push c_item.url_path
                 script_list.upush "<script src=\"#{c_item.url_path}\"></script>"
-              # when 'join'
+              # when "join"
                 # script_list.upush "<script>#{c_item.body}</script>"
-          when 'css'
+          when "css"
             style_hash[c_item.url_path] = c_item.body
             style_list.push c_item.body
       
@@ -254,32 +254,32 @@ engine        = require './server_engine_handler'
           """
       # var framework_template_hash = #{JSON.stringify template_hash};
       return send_c_item {
-        header_content_type : engine.mime 'html'
+        header_content_type : engine.mime "html"
         body
       }
     else
       if stat.size < opt.seekable_threshold and !req.headers.range # ~1 Mb
         send_c_item read_c_item full_path
       else
-        res.set 'Accept-Ranges', 'bytes'
-        res.set 'Content-Length', stat.size
-        res.set 'Content-Type',   mime.getType full_path
+        res.set "Accept-Ranges", "bytes"
+        res.set "Content-Length", stat.size
+        res.set "Content-Type",   mime.getType full_path
         if req.headers.range
           ranges = range_parser stat.size, req.headers.range
           return res.sendStatus(400) if ranges == -2 # malformed range
           if ranges == -1
             # unsatisfiable range
-            res.set 'Content-Range', '*/' + stat.size
+            res.set "Content-Range", "*/" + stat.size
             return res.sendStatus(416)
           
-          if ranges.type != 'bytes'
+          if ranges.type != "bytes"
             return fs.createReadStream(full_path).pipe res
           if ranges.length > 1
-            res.end 'send-seekable can only serve single ranges'
+            res.end "send-seekable can only serve single ranges"
           {start, end} = ranges[0]
           res.status 206
-          res.set 'Content-Length', (end - start) + 1
-          res.set 'Content-Range', 'bytes ' + start + '-' + end + '/' + stat.size
+          res.set "Content-Length", (end - start) + 1
+          res.set "Content-Range", "bytes " + start + "-" + end + "/" + stat.size
           fs.createReadStream(full_path, {start, end}).pipe res
         else
           fs.createReadStream(full_path).pipe res
@@ -289,8 +289,8 @@ engine        = require './server_engine_handler'
     puts "[INFO] Webcom delivery server started. Try on any of this adresses:"
     for k,list of os.networkInterfaces()
       for v in list
-        continue if v.family != 'IPv4'
-        continue if v.address == '127.0.0.1'
+        continue if v.family != "IPv4"
+        continue if v.address == "127.0.0.1"
         puts "[INFO]   http://#{v.address}:#{opt.port}"
     opt.on_end?()
     return
@@ -298,7 +298,7 @@ engine        = require './server_engine_handler'
   #    watch
   # ###################################################################################################
   if opt.hotreload
-    WebSocketServer = require('ws').Server
+    WebSocketServer = require("ws").Server
     wss = new WebSocketServer
       port: opt.ws_port or opt.port+1
     hotreload_full = ()->
@@ -306,13 +306,13 @@ engine        = require './server_engine_handler'
         switch  : "hotreload_full"
         start_ts: module.start_ts
       }
-    wss.on 'connection', (con)->
+    wss.on "connection", (con)->
       con.write = (msg)->
-        if typeof msg == 'string' or msg instanceof Buffer
+        if typeof msg == "string" or msg instanceof Buffer
           return con.send msg, (err)->
-            perr 'ws', err if err
+            perr "ws", err if err
         return con.send JSON.stringify(msg), (err)->
-          perr 'ws', err if err
+          perr "ws", err if err
       con.write hotreload_full()
       return
     
@@ -323,12 +323,12 @@ engine        = require './server_engine_handler'
         con.write msg
       return
     
-    chokidar = require 'chokidar'
+    chokidar = require "chokidar"
     watch_dir = if opt.watch_root then "." else opt.htdocs
     watcher = chokidar.watch watch_dir, opt.chokidar or {}
     handler = (event, full_path)->
-      if path.sep != '/'
-        full_path = full_path.split(path.sep).join('/')
+      if path.sep != "/"
+        full_path = full_path.split(path.sep).join("/")
       return if /^\.git/.test full_path
       return if opt.watcher_ignore? event, full_path
       
@@ -340,25 +340,25 @@ engine        = require './server_engine_handler'
             process.exit()
           return
         
-        if event == 'unlink'
+        if event == "unlink"
           url_path = full_to_url_path full_path
           c_item = {
             engine : engine.canonical url_path
             url_path : url_path
-            body : ''
+            body : ""
           }
         else
           c_item = read_c_item full_path, null, true
         switch c_item.engine
-          when 'html'
+          when "html"
             wss.write {
               switch : "hotreload_template"
               path   : c_item.url_path
               content: c_item.body
               event
             }
-          when 'css'
-            if opt.css_strict_order and event in ['add', 'unlink']
+          when "css"
+            if opt.css_strict_order and event in ["add", "unlink"]
               puts "[INFO] css_strict_order reload"
               module.start_ts = Date.now()
               wss.write hotreload_full()
@@ -369,7 +369,7 @@ engine        = require './server_engine_handler'
                 content: c_item.body
                 event
               }
-          when 'image'
+          when "image"
             module.start_ts = Date.now()
             wss.write {
               switch  : "hotreload_image"
@@ -377,7 +377,7 @@ engine        = require './server_engine_handler'
               path    : c_item.url_path
               event
             }
-          when 'js'
+          when "js"
             module.start_ts = Date.now()
             wss.write {
               switch  : "hotreload_js"
@@ -396,15 +396,15 @@ engine        = require './server_engine_handler'
         return
       , 100 # because IDE/nfs can be not so fast
       return
-    watcher.on 'unlink', (path)-> handler 'unlink', path
-    watcher.on 'change', (path)-> handler 'change', path
+    watcher.on "unlink", (path)-> handler "unlink", path
+    watcher.on "change", (path)-> handler "change", path
     
     is_ready = false
     on_ready = ()->
       return if is_ready
       is_ready = true
       puts "[INFO] watcher scan ready"
-      watcher.on 'add', (path)-> handler 'add', path
+      watcher.on "add", (path)-> handler "add", path
       opt.on_watcher_ready?()
       return
     
@@ -413,12 +413,12 @@ engine        = require './server_engine_handler'
       clearTimeout timeout if timeout?
       timeout = setTimeout on_ready, 5000 # Прим. это всего лишь recovery. chokidar в первую очередь должен попытаться решить это всё сам
       return
-    watcher.on 'add', (full_path)->
-      return if opt.watcher_ignore? 'add', full_path
+    watcher.on "add", (full_path)->
+      return if opt.watcher_ignore? "add", full_path
       # p "ADD", full_path
       upd_ready_timer()
     puts "[INFO] watcher start..."
-    watcher.on 'ready', on_ready
+    watcher.on "ready", on_ready
   {
     stop : ()->
       server.close()
