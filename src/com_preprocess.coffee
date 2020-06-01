@@ -1,8 +1,8 @@
 module = @
-require 'fy'
-require 'fy/codegen'
-com_lang = require 'com-lang'
-{tag_hash, tag_list} = require 'html-tag-collection'
+require "fy"
+require "fy/codegen"
+com_lang = require "com-lang"
+{tag_hash, tag_list} = require "html-tag-collection"
 
 @preprocess_react = (code, opt)->
   unless opt.no_com_lang
@@ -17,7 +17,7 @@ com_lang = require 'com-lang'
     if reg_ret = /^([\s\S]*)module.exports\s*=([\s\S]*)$/.exec code
       [_skip, code_before, code_after] = reg_ret
     else
-      code_before = ''
+      code_before = ""
       code_after = code
     
     code = """
@@ -45,22 +45,22 @@ com_lang = require 'com-lang'
       """
   """
   _react_key_map = {
-    mount       : 'componentWillMount'
-    mount_done  : 'componentDidMount'
-    unmount     : 'componentWillUnmount'
-    unmount_done: 'componentDidUnmount'
-    props_change: 'componentWillReceiveProps'
+    mount       : "componentWillMount"
+    mount_done  : "componentDidMount"
+    unmount     : "componentWillUnmount"
+    unmount_done: "componentDidUnmount"
+    props_change: "componentWillReceiveProps"
   }
   _react_attr_map = {
-    class         : 'className'
-    on_change     : 'onChange'
-    on_click      : 'onClick'
-    on_wheel      : 'onWheel'
-    on_mouse_move : 'onMouseMove'
-    on_mouse_down : 'onMouseDown'
-    on_mouse_out  : 'onMouseOut'
-    on_move_over  : 'onMouseOver'
-    on_hover      : 'onMouseOver'
+    class         : "className"
+    on_change     : "onChange"
+    on_click      : "onClick"
+    on_wheel      : "onWheel"
+    on_mouse_move : "onMouseMove"
+    on_mouse_down : "onMouseDown"
+    on_mouse_out  : "onMouseOut"
+    on_move_over  : "onMouseOver"
+    on_hover      : "onMouseOver"
   }
   window.CKR = 
     __node_buffer : []
@@ -78,7 +78,7 @@ com_lang = require 'com-lang'
         displayName: name
       }
       if t.state
-        if typeof t.state != 'function'
+        if typeof t.state != "function"
           old_state = t.state
           t.state = ()->clone old_state
         t.getInitialState = t.state
@@ -93,7 +93,7 @@ com_lang = require 'com-lang'
   define_tag = (name)->
     # temp disable Т.к. ломает только fy.p
     # if window[name]?
-    #   perr 'WARNING something bad is happening. You trying to rewrite already defined window property '+name+'. It can break app'
+    #   perr "WARNING something bad is happening. You trying to rewrite already defined window property "+name+". It can break app"
     window[name] = ()->
       children = []
       attrs    = {}
@@ -103,10 +103,10 @@ com_lang = require 'com-lang'
           children.push arg
         else if Array.isArray arg
           children.uappend arg
-        else if typeof arg == 'object'
+        else if typeof arg == "object"
           for k,v of arg
             attrs[_react_attr_map[k] or k] = v
-        else if typeof arg == 'function'
+        else if typeof arg == "function"
           CKR.__node_buffer.push []
           t = arg()
           children.uappend CKR.__node_buffer.pop()
@@ -114,9 +114,9 @@ com_lang = require 'com-lang'
             children.uappend t
           else
             children.upush t
-        else if typeof arg == 'string'
+        else if typeof arg == "string"
           children.push arg
-        else if typeof arg == 'number'
+        else if typeof arg == "number"
           children.push arg.toString()
       
       ret = if children.length
@@ -134,7 +134,7 @@ com_lang = require 'com-lang'
   define_com = (name, react_class)->
     if window[name]?
       if !window.hotreplace
-        perr 'WARNING something bad is happening. You trying to rewrite already defined window property '+name+'. It can break app'
+        perr "WARNING something bad is happening. You trying to rewrite already defined window property "+name+". It can break app"
     window[name] = ()->
       children = []
       attrs    = {}
@@ -144,10 +144,10 @@ com_lang = require 'com-lang'
           children.push arg
         else if Array.isArray arg
           children.uappend arg
-        else if typeof arg == 'object'
+        else if typeof arg == "object"
           for k,v of arg
             attrs[k] = v # NOTE NO mapping
-        else if typeof arg == 'function'
+        else if typeof arg == "function"
           CKR.__node_buffer.push []
           t = arg()
           children.uappend CKR.__node_buffer.pop()
@@ -155,9 +155,9 @@ com_lang = require 'com-lang'
             children.uappend t
           else
             children.upush t
-        else if typeof arg == 'string'
+        else if typeof arg == "string"
           children.push arg
-        else if typeof arg == 'number'
+        else if typeof arg == "number"
           children.push arg.toString()
       
       ret = if children.length
@@ -173,4 +173,4 @@ com_lang = require 'com-lang'
       ret
     return
   #{join_list ret}
-  """
+  """#"

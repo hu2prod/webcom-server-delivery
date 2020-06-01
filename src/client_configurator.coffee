@@ -1,7 +1,7 @@
 module = @
-_iced = require 'iced-coffee-script'
+_iced = require "iced-coffee-script"
 class @Webcom_plugin
-  name : ''
+  name : ""
   feature_hash : {}
   dependency_list : []
   code_gen : ()->throw new Error "unimplemented plugin"
@@ -51,7 +51,7 @@ class @Webcom_bundle
       ret.push v.code_gen()
       v.feature_hash = bak
     
-    ret.join '\n'
+    ret.join "\n"
   
   win_gen : ()->
     return @_win_gen if @_win_gen
@@ -62,4 +62,4 @@ class @Webcom_bundle
       """
     
 @master_registry = new module.Webcom_plugin_registry
-@cs_compile = (t)->_iced.compile t, bare:true, runtime:'inline'
+@cs_compile = (t)->_iced.compile t, bare:true, runtime:"inline"
