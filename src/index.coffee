@@ -399,6 +399,7 @@ engine        = require "./server_engine_handler"
             url_path : url_path
             body : ""
           }
+          delete cache[url_path]
         else
           c_item = read_c_item full_path, null, true
         switch c_item.engine
