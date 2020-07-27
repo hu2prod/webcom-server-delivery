@@ -59,7 +59,11 @@ engine        = require "./server_engine_handler"
         root_url_path ?= c_item.root_url_path
     
     [skip, engine_name] = /\.([^\/]*?)$/.exec url_path
-    code = fs.readFileSync full_path
+    try
+      code = fs.readFileSync full_path
+    catch err
+      perr err
+      code = ""
     engine_opt = opt.engine or {}
     engine_opt.url_path = url_path.replace root_url_path, ""
     c_item = {
