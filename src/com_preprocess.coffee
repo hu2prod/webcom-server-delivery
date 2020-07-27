@@ -131,7 +131,7 @@ com_lang = require "com-lang"
         last.push ret
       ret
     return
-  define_com = (name, react_class)->
+  window.define_com = (name, react_class)->
     if window[name]?
       if !window.hotreplace
         perr "WARNING something bad is happening. You trying to rewrite already defined window property "+name+". It can break app"

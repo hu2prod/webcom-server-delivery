@@ -76,6 +76,95 @@ engine        = require "./server_engine_handler"
     # LATER compact template HERE
     cache[url_path] = c_item
   
+  dir_process = (url_path, full_path)->
+    style_list = []
+    style_hash = {}
+    # template_hash = {}
+    script_list = []
+    
+    file_hash = {}
+    file_arg_list = []
+    recursive_read = (path, root_path, file_filter, file_filter_condition)->
+      root_path ?= url_path
+      conf = {}
+      path_to_config = path+"/.config"
+      if fs.existsSync path_to_config
+        try
+          conf = CSON.parse fs.readFileSync path_to_config
+        catch e
+          perr "[ERROR] invalid config #{path_to_config}"
+      
+      conf.require_list ?= []
+      conf.ignore_list ?= []
+      for dir,k in conf.ignore_list
+        conf.ignore_list[k] = "#{path}/#{dir}"
+      
+      for dir in conf.require_list
+        recursive_read "#{opt.htdocs}/#{dir}", "/#{dir}", file_filter, file_filter_condition
+      
+      file_list = []
+      sorted_file_list = fs.readdirSync path
+      sorted_file_list.sort()
+      for file in sorted_file_list
+        continue if file == ".config"
+        real_path = "#{path}/#{file}"
+        continue if conf.ignore_list.has real_path
+        stat = fs.lstatSync real_path
+        
+        continue if stat.isSymbolicLink()
+        
+        if stat.isDirectory()
+          recursive_read real_path, root_path, file_filter, file_filter_condition
+        else
+          # delay
+          file_list.push {file, real_path, root_path}
+      
+      for tmp in file_list
+        {file, real_path, root_path} = tmp
+        continue if file_filter and file_filter_condition != file_filter.test file
+        continue if file_hash[real_path]
+        file_hash[real_path] = true
+        file_arg_list.push [real_path, root_path]
+      return
+    
+    if opt.vendor
+      recursive_read full_vendor_path
+    file_arg_list.push ["/bundle.coffee"]
+    recursive_read full_path, url_path, /\.com\.coffee$/, true
+    recursive_read full_path, url_path, /\.com\.coffee$/, false
+    
+    script_url_list = []
+    url_file_list = ["#{url_path}/.config"]
+    for file_arg in file_arg_list
+      if opt.seekable
+        path = file_arg[0]
+        if path != "/bundle.coffee"
+          stat = fs.statSync path
+          continue if stat.size > opt.seekable_threshold
+      
+      c_item = read_c_item file_arg...
+      switch c_item.engine
+        # when "html"
+          # template_hash[c_item.url_path] = c_item.body
+        when "js"
+          switch opt.js_delivery
+            when "separate"
+              url_file_list.push c_item.url_path
+              script_list.upush "<script src=\"#{c_item.url_path}\"></script>"
+              script_url_list.upush c_item.url_path
+            # when "join"
+              # script_list.upush "<script>#{c_item.body}</script>"
+        when "css"
+          style_hash[c_item.url_path] = c_item.body
+          style_list.push c_item.body
+    {
+      url_file_list
+      style_list
+      style_hash
+      script_list
+      script_url_list
+    }
+  
   cache["/bundle.coffee"] = {
     engine  : "js"
     header_content_type : engine.mime "js"
@@ -137,84 +226,13 @@ engine        = require "./server_engine_handler"
         res.end()
         # return res.redirect(url_path+"/") # так можно в express
         return
-      style_list = []
-      style_hash = {}
-      # template_hash = {}
-      script_list = []
       
-      file_hash = {}
-      file_arg_list = []
-      recursive_read = (path, root_path, file_filter, file_filter_condition)->
-        root_path ?= url_path
-        conf = {}
-        path_to_config = path+"/.config"
-        if fs.existsSync path_to_config
-          try
-            conf = CSON.parse fs.readFileSync path_to_config
-          catch e
-            perr "[ERROR] invalid config #{path_to_config}"
-        
-        conf.require_list ?= []
-        conf.ignore_list ?= []
-        for dir,k in conf.ignore_list
-          conf.ignore_list[k] = "#{path}/#{dir}"
-        
-        for dir in conf.require_list
-          recursive_read "#{opt.htdocs}/#{dir}", "/#{dir}", file_filter, file_filter_condition
-        
-        file_list = []
-        sorted_file_list = fs.readdirSync path
-        sorted_file_list.sort()
-        for file in sorted_file_list
-          continue if file == ".config"
-          real_path = "#{path}/#{file}"
-          continue if conf.ignore_list.has real_path
-          stat = fs.lstatSync real_path
-          
-          continue if stat.isSymbolicLink()
-          
-          if stat.isDirectory()
-            recursive_read real_path, root_path, file_filter, file_filter_condition
-          else
-            # delay
-            file_list.push {file, real_path, root_path}
-        
-        for tmp in file_list
-          {file, real_path, root_path} = tmp
-          continue if file_filter and file_filter_condition != file_filter.test file
-          continue if file_hash[real_path]
-          file_hash[real_path] = true
-          file_arg_list.push [real_path, root_path]
-        return
-      
-      if opt.vendor
-        recursive_read full_vendor_path
-      file_arg_list.push ["/bundle.coffee"]
-      recursive_read full_path, url_path, /\.com\.coffee$/, true
-      recursive_read full_path, url_path, /\.com\.coffee$/, false
-      
-      url_file_list = ["#{url_path}/.config"]
-      for file_arg in file_arg_list
-        if opt.seekable
-          path = file_arg[0]
-          if path != "/bundle.coffee"
-            stat = fs.statSync path
-            continue if stat.size > opt.seekable_threshold
-        
-        c_item = read_c_item file_arg...
-        switch c_item.engine
-          # when "html"
-            # template_hash[c_item.url_path] = c_item.body
-          when "js"
-            switch opt.js_delivery
-              when "separate"
-                url_file_list.push c_item.url_path
-                script_list.upush "<script src=\"#{c_item.url_path}\"></script>"
-              # when "join"
-                # script_list.upush "<script>#{c_item.body}</script>"
-          when "css"
-            style_hash[c_item.url_path] = c_item.body
-            style_list.push c_item.body
+      {
+        url_file_list
+        style_list
+        style_hash
+        script_list
+      } = dir_process url_path, full_path
       
       hot_reload_code = ""
       if opt.hotreload
@@ -317,6 +335,30 @@ engine        = require "./server_engine_handler"
         return con.send JSON.stringify(msg), (err)->
           perr "ws", err if err
       con.write hotreload_full()
+      con.on "message", (msg)->
+        try
+          data = JSON.parse msg
+        catch err
+          perr err
+          return
+        
+        switch data.switch
+          when "file_list_get"
+            url_path = data.url_path ? ""
+            full_path = opt.htdocs+url_path
+            {
+              script_url_list
+            } = dir_process url_path, full_path
+            
+            con.write {
+              switch      : "file_list_get"
+              request_uid : data.request_uid
+              list        : script_url_list
+            }
+          
+          # TODO LATER
+          # when "file_list_content_get"
+        
       return
     
     wss.write = (msg)->
@@ -387,6 +429,7 @@ engine        = require "./server_engine_handler"
               start_ts: module.start_ts
               path    : c_item.url_path
               event
+              content : if opt.hotreload_js_expose_content then c_item.body else undefined
             }
           else
             module.start_ts = Date.now()
@@ -395,6 +438,7 @@ engine        = require "./server_engine_handler"
               start_ts: module.start_ts
               path    : c_item.url_path
               event
+              content : if opt.hotreload_js_expose_content then c_item.body else undefined
             }
         return
       , 100 # because IDE/nfs can be not so fast
