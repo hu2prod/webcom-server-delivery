@@ -119,6 +119,11 @@ com_lang = require "com-lang"
         else if typeof arg == "number"
           children.push arg.toString()
       
+      # host patch (for extensions)
+      if window.host_patch and name in ["img", "video"]
+        if attrs.src[0] == "/"
+          attrs.src = window.host_patch + attrs.src
+      
       ret = if children.length
         React.createElement(name, attrs, children...)
       else

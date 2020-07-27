@@ -77,10 +77,12 @@ engine        = require "./server_engine_handler"
     cache[url_path] = c_item
   
   dir_process = (url_path, full_path)->
+    style_url_list = []
     style_list = []
     style_hash = {}
     # template_hash = {}
     script_list = []
+    script_content_hash = {}
     
     file_hash = {}
     file_arg_list = []
@@ -147,22 +149,28 @@ engine        = require "./server_engine_handler"
         # when "html"
           # template_hash[c_item.url_path] = c_item.body
         when "js"
+          script_url_list.upush c_item.url_path
+          script_content_hash[c_item.url_path] = c_item.body
           switch opt.js_delivery
             when "separate"
               url_file_list.push c_item.url_path
               script_list.upush "<script src=\"#{c_item.url_path}\"></script>"
-              script_url_list.upush c_item.url_path
             # when "join"
               # script_list.upush "<script>#{c_item.body}</script>"
         when "css"
           style_hash[c_item.url_path] = c_item.body
+          style_url_list.push c_item.url_path
           style_list.push c_item.body
     {
       url_file_list
+      
+      style_url_list
       style_list
       style_hash
-      script_list
+      
       script_url_list
+      script_list
+      script_content_hash
     }
   
   cache["/bundle.coffee"] = {
@@ -343,21 +351,16 @@ engine        = require "./server_engine_handler"
           return
         
         switch data.switch
-          when "file_list_get"
+          when "dir_process"
             url_path = data.url_path ? ""
             full_path = opt.htdocs+url_path
-            {
-              script_url_list
-            } = dir_process url_path, full_path
+            res = dir_process url_path, full_path
             
             con.write {
               switch      : "file_list_get"
               request_uid : data.request_uid
-              list        : script_url_list
+              res
             }
-          
-          # TODO LATER
-          # when "file_list_content_get"
         
       return
     
@@ -410,6 +413,7 @@ engine        = require "./server_engine_handler"
             else
               wss.write {
                 switch : "hotreload_style"
+                start_ts: module.start_ts
                 path   : c_item.url_path
                 content: c_item.body
                 event
