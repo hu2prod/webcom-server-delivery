@@ -187,7 +187,7 @@ engine        = require "./server_engine_handler"
   comp = compression(threshold: 10000) # 9+kb
   # server = http.createServer (req, res)-> # can't use with seekable
   server = express()
-  server.use (req, res)->
+  server.use http_handler = (req, res)->
     if opt.compression
       comp req, res, ->
     url = mod_url.parse req.url
@@ -318,15 +318,16 @@ engine        = require "./server_engine_handler"
           fs.createReadStream(full_path).pipe res
     return
   
-  server.listen opt.port, ()->
-    puts "[INFO] Webcom delivery server started. Try on any of this adresses:"
-    for k,list of os.networkInterfaces()
-      for v in list
-        continue if v.family != "IPv4"
-        continue if v.address == "127.0.0.1"
-        puts "[INFO]   http://#{v.address}:#{opt.port}"
-    opt.on_end?()
-    return
+  if opt.port
+    server.listen opt.port, ()->
+      puts "[INFO] Webcom delivery server started. Try on any of this adresses:"
+      for k,list of os.networkInterfaces()
+        for v in list
+          continue if v.family != "IPv4"
+          continue if v.address == "127.0.0.1"
+          puts "[INFO]   http://#{v.address}:#{opt.port}"
+      opt.on_end?()
+      return
   # ###################################################################################################
   #    watch
   # ###################################################################################################
@@ -477,9 +478,11 @@ engine        = require "./server_engine_handler"
     watcher.on "ready", on_ready
   {
     stop : ()->
-      server.close()
+      server?.close()
       wss?.close() # NOTE didn't work
       watcher?.close()
+    http_handler
+    dir_process
     watcher
     cache
     full_to_url_path
