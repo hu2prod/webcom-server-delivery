@@ -477,6 +477,7 @@ engine        = require "./server_engine_handler"
     puts "[INFO] watcher start..."
     watcher.on "ready", on_ready
   {
+    server
     stop : ()->
       server?.close()
       wss?.close() # NOTE didn't work
