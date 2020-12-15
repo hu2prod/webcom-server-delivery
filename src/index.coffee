@@ -31,6 +31,7 @@ engine        = require "./server_engine_handler"
   opt.compression ?= opt.gzip
   opt.seekable    ?= true
   opt.seekable_threshold ?= 1e6
+  opt.compress_threshold ?= 10000  # 9+kb
   
   opt.htdocs = opt.htdocs.replace /\/$/, ""
   
@@ -184,7 +185,7 @@ engine        = require "./server_engine_handler"
     url_path: "/bundle.coffee"
   }
   
-  comp = compression(threshold: 10000) # 9+kb
+  comp = compression(threshold: opt.compress_threshold)
   # server = http.createServer (req, res)-> # can't use with seekable
   server = express()
   server.use http_handler = (req, res)->
@@ -253,6 +254,7 @@ engine        = require "./server_engine_handler"
           var config_hot_reload_port = #{JSON.stringify opt.ws_port};
           var start_ts = #{JSON.stringify module.start_ts};
           var file_list = #{JSON.stringify url_file_list};
+          var framework_style_hash = #{JSON.stringify style_hash};
           """
       
       # TODO LATER opt.index_html
@@ -264,6 +266,12 @@ engine        = require "./server_engine_handler"
         extra_opt.script_list = script_list
         body = opt.body_fn extra_opt
       else
+        if hot_reload_code
+          hot_reload_code = """
+          <script>
+            #{make_tab hot_reload_code, '  '}
+          </script>
+          """
         body = """
           <!DOCTYPE html>
           <html>
@@ -277,10 +285,7 @@ engine        = require "./server_engine_handler"
             </head>
             <body>
               <div id=\"mount_point\"></div>
-              <script>
-                #{make_tab hot_reload_code, '      '}
-                var framework_style_hash = #{JSON.stringify style_hash};
-              </script>
+              #{make_tab hot_reload_code, '    '}
               #{join_list script_list, '    '}
             </body>
           </html>
@@ -320,7 +325,7 @@ engine        = require "./server_engine_handler"
   
   if opt.port
     server.listen opt.port, ()->
-      puts "[INFO] Webcom delivery server started. Try on any of this adresses:"
+      puts "[INFO] Webcom delivery server started. Try on any of this addresses:"
       for k,list of os.networkInterfaces()
         for v in list
           continue if v.family != "IPv4"
