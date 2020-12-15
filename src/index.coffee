@@ -31,6 +31,7 @@ engine        = require "./server_engine_handler"
   opt.compression ?= opt.gzip
   opt.seekable    ?= true
   opt.seekable_threshold ?= 1e6
+  opt.compress_threshold ?= 10000  # 9+kb
   
   opt.htdocs = opt.htdocs.replace /\/$/, ""
   
@@ -184,7 +185,7 @@ engine        = require "./server_engine_handler"
     url_path: "/bundle.coffee"
   }
   
-  comp = compression(threshold: 10000) # 9+kb
+  comp = compression(threshold: opt.compress_threshold)
   # server = http.createServer (req, res)-> # can't use with seekable
   server = express()
   server.use http_handler = (req, res)->
@@ -320,7 +321,7 @@ engine        = require "./server_engine_handler"
   
   if opt.port
     server.listen opt.port, ()->
-      puts "[INFO] Webcom delivery server started. Try on any of this adresses:"
+      puts "[INFO] Webcom delivery server started. Try on any of this addresses:"
       for k,list of os.networkInterfaces()
         for v in list
           continue if v.family != "IPv4"
