@@ -43,6 +43,99 @@ com_lang = require "com-lang"
     ret.push """
       define_tag #{JSON.stringify tag}
       """
+  
+  # https://developer.mozilla.org/ru/docs/Web/Events
+  # https://ru.reactjs.org/docs/events.html
+  # не все события перенесены, только самые важные и используемые, переносить по мере надобности
+  _react_attr_map = {
+    class         : "className"
+    # form
+    on_change     : "onChange"
+    on_input      : "onInput"
+    on_invalid    : "onInvalid"
+    on_reset      : "onReset"
+    on_submit     : "onSubmit"
+    
+    on_error      : "onError"
+    on_load       : "onLoad"
+    
+    # keyboard
+    on_key_down   : "onKeyDown"
+    on_key_press  : "onKeyPress"
+    on_key_up     : "onKeyUp"
+    
+      
+    # clipboard c (почти не используемые)
+    on_copy       : "onCopy"
+    on_cut        : "onCut"
+    on_paste      : "onPaste"
+    
+    # onCompositionEnd onCompositionStart onCompositionUpdate
+    # я считаю не используемые вообще
+    
+    # mouse
+    on_click      : "onClick"
+    on_dblclick   : "onDoubleClick"
+    on_context_menu : "onContextMenu"
+    on_wheel      : "onWheel"
+    on_mouse_move : "onMouseMove"
+    on_mouse_down : "onMouseDown"
+    on_mouse_up   : "onMouseUp"
+    on_mouse_out  : "onMouseOut"
+    on_move_over  : "onMouseOver"
+    # only for parent, not children
+    on_move_enter : "onMouseEnter"
+    on_move_leave : "onMouseLeave"
+    
+    # drag'n'drop (почти не используемые)
+    on_drag       : "onDrag"
+    on_drag_end   : "onDragEnd"
+    on_drag_enter : "onDragEnter"
+    on_drag_exit  : "onDragExit"
+    on_drag_leave : "onDragLeave"
+    on_drag_over  : "onDragOver"
+    on_drag_start : "onDragStart"
+    on_drop       : "onDrop"
+    
+    # для ввода пером
+    # onPointerDown onPointerMove onPointerUp onPointerCancel onGotPointerCapture
+    # onLostPointerCapture onPointerEnter onPointerLeave onPointerOver onPointerOut
+    # я считаю не используемые вообще
+    
+    # touch
+    on_touch_cancel : "onTouchCancel"
+    on_touch_end    : "onTouchEnd"
+    on_touch_move   : "onTouchMove"
+    on_touch_start  : "onTouchStart"
+    
+    
+    # focus
+    on_focus      : "onFocus"
+    on_blur       : "onBlur"
+    
+    
+    # special
+    on_select     : "onSelect"
+    on_scroll     : "onScroll"
+    # onTransitionEnd
+    # onToggle
+    
+    # media
+    # onAbort onCanPlay onCanPlayThrough onDurationChange onEmptied onEncrypted
+    # onEnded onError onLoadedData onLoadedMetadata onLoadStart onPause onPlay
+    # onPlaying onProgress onRateChange onSeeked onSeeking onStalled onSuspend
+    # onTimeUpdate onVolumeChange onWaiting
+    # я считаю используемые очень-очень редко
+    
+    # animation
+    # onAnimationStart onAnimationEnd onAnimationIteration
+    # непонятно. Вроде должны быть используемые, но мне ни разу не пригодились
+    
+    
+    # alias
+    on_hover      : "onMouseOver"
+  }
+  
   """
   _react_key_map = {
     mount       : "componentWillMount"
@@ -51,17 +144,7 @@ com_lang = require "com-lang"
     unmount_done: "componentDidUnmount"
     props_change: "componentWillReceiveProps"
   }
-  _react_attr_map = {
-    class         : "className"
-    on_change     : "onChange"
-    on_click      : "onClick"
-    on_wheel      : "onWheel"
-    on_mouse_move : "onMouseMove"
-    on_mouse_down : "onMouseDown"
-    on_mouse_out  : "onMouseOut"
-    on_move_over  : "onMouseOver"
-    on_hover      : "onMouseOver"
-  }
+  _react_attr_map = #{JSON.stringify _react_attr_map, null, 2}
   window.CKR = 
     __node_buffer : []
     prop : (t)->
