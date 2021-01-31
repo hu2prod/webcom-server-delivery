@@ -82,7 +82,7 @@ com_lang = require "com-lang"
     on_mouse_down : "onMouseDown"
     on_mouse_up   : "onMouseUp"
     on_mouse_out  : "onMouseOut"
-    on_move_over  : "onMouseOver"
+    on_mouse_over : "onMouseOver"
     # only for parent, not children
     on_move_enter : "onMouseEnter"
     on_move_leave : "onMouseLeave"
