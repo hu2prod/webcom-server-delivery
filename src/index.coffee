@@ -147,7 +147,6 @@ engine        = require "./server_engine_handler"
         path = file_arg[0]
         if path != "/bundle.coffee"
           stat = fs.statSync path
-          continue if stat.size > opt.seekable_threshold
       
       c_item = read_c_item file_arg...
       switch c_item.engine
@@ -166,6 +165,11 @@ engine        = require "./server_engine_handler"
           style_hash[c_item.url_path] = c_item.body
           style_url_list.push c_item.url_path
           style_list.push c_item.body
+        
+        # pass big js
+        else
+          if opt.seekable
+            continue if stat.size > opt.seekable_threshold
     {
       url_file_list
       
