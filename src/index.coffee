@@ -191,6 +191,7 @@ engine        = require "./server_engine_handler"
   
   comp = compression(threshold: opt.compress_threshold)
   # server = http.createServer (req, res)-> # can't use with seekable
+  server_instance = null
   server = express()
   server.use http_handler = (req, res)->
     if opt.compression
@@ -328,7 +329,7 @@ engine        = require "./server_engine_handler"
     return
   
   if opt.port
-    server.listen opt.port, ()->
+    server_instance = server.listen opt.port, ()->
       puts "[INFO] Webcom delivery server started. Try on any of this addresses:"
       for k,list of os.networkInterfaces()
         for v in list
@@ -487,8 +488,9 @@ engine        = require "./server_engine_handler"
     watcher.on "ready", on_ready
   {
     server
+    server_instance
     stop : ()->
-      server?.close()
+      server_instance?.close()
       wss?.close() # NOTE didn't work
       watcher?.close()
     http_handler
