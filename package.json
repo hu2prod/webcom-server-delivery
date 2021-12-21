@@ -18,10 +18,10 @@
   },
   "homepage": "https://github.com/hu2prod/webcom#readme",
   "dependencies": {
-    "chokidar": "^3.4.3",
+    "chokidar": "^3.5.2",
     "com-lang": "github:hu2prod/com-lang",
     "compression": "^1.7.4",
-    "cson": "^5.1.0",
+    "cson-parser": "^4.0.9",
     "express": "^4.17.1",
     "fy": "github:hu2prod/fy",
     "html-tag-collection": "github:hu2prod/html-tag-collection",
