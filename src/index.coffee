@@ -329,7 +329,7 @@ engine        = require "./server_engine_handler"
     return
   
   if opt.port
-    server_instance = server.listen opt.port, ()->
+    on_complete = ()->
       puts "[INFO] Webcom delivery server started. Try on any of this addresses:"
       for k,list of os.networkInterfaces()
         for v in list
@@ -338,13 +338,22 @@ engine        = require "./server_engine_handler"
           puts "[INFO]   http://#{v.address}:#{opt.port}"
       opt.on_end?()
       return
+    if opt.no_port_expose
+      server_instance = server.listen opt.port, "localhost", on_complete
+    else
+      server_instance = server.listen opt.port, on_complete
   # ###################################################################################################
   #    watch
   # ###################################################################################################
   if opt.hotreload
     WebSocketServer = require("ws").Server
-    wss = new WebSocketServer
-      port: opt.ws_port or opt.port+1
+    if opt.no_port_expose
+      wss = new WebSocketServer
+        port: opt.ws_port or opt.port+1
+        host: "localhost"
+    else
+      wss = new WebSocketServer
+        port: opt.ws_port or opt.port+1
     hotreload_full = ()->
       return {
         switch  : "hotreload_full"
