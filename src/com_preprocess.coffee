@@ -18,7 +18,13 @@ com_lang = require "com-lang"
       [_skip, code_before, code_after] = reg_ret
     else
       code_before = ""
-      code_after = code
+      # protection from empty file
+      code_after = code or """
+        {
+          render : ()->
+            div()
+        }
+        """
     
     code = """
       com_name = #{JSON.stringify opt.name}
