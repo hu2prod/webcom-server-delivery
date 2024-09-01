@@ -196,12 +196,19 @@ engine        = require "./server_engine_handler"
   server.use http_handler = (req, res)->
     if opt.compression
       comp req, res, ->
-    url = mod_url.parse req.url
-    url_path = url.pathname
-    url_path = url_path.replace "/..", ""
-    url_path = url_path.replace /\/$/, ""
-    url_path = url_path.replace /^\/vendor/, seek_vendor_path
-    url_path = decodeURIComponent url_path
+    
+    try
+      url = mod_url.parse req.url
+      url_path = url.pathname
+      url_path = url_path.replace "/..", ""
+      url_path = url_path.replace /\/$/, ""
+      url_path = url_path.replace /^\/vendor/, seek_vendor_path
+      url_path = decodeURIComponent url_path
+    catch err
+      perr "bad url", req.url, err.message
+      res.status 500
+      res.end ""
+      return
     
     send_c_item = (c_item)->
       if c_item.body instanceof Buffer
